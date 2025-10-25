@@ -1,0 +1,23 @@
+services:
+  redis:
+    image: redis:8.2-alpine
+    container_name: redis
+    restart: always
+    volumes:
+      - ./data:/data
+      - ./data/redis.conf:/data/redis.conf
+    command: redis-server /data/redis.conf --loglevel notice --requirepass ${REDIS_PASSWORD}
+    networks:
+      - mired
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.redis.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.redis.entryPoints=redis"
+      - "traefik.tcp.routers.redis.service=redis"
+      - "traefik.tcp.services.redis.loadbalancer.server.port=6379"
+
+networks:
+    mired:
+      external: true
+
+
