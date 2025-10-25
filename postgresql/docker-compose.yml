@@ -1,0 +1,25 @@
+services:    
+    postgresql:
+        container_name: postgresql-servidor
+        image: postgres:15.4-bullseye
+        #ports:
+        #    - "5432:5432"
+        networks:
+            - mired
+        environment:
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - PGDATA=/var/lib/postgresql/data/pgdata
+        volumes:
+            - ./data:/var/lib/postgresql/data
+            - ./sql:/docker-entrypoint-initdb.d
+        restart: always
+        labels:
+            - "traefik.enable=true"
+            - "traefik.tcp.routers.postgresql.rule=HostSNI(`*`)"
+            - "traefik.tcp.routers.postgresql.entrypoints=postgresql"
+            - "traefik.tcp.services.postgresql.loadbalancer.server.port=5432"
+networks:
+    mired:
+        external: true
