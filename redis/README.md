@@ -7,7 +7,7 @@ carpeta_del_usuario
 │   └── docker-compose.yml
 │   └── .env # Renombrar .env-example y cambiar los valores de las variables de entorno
 ```
-## Ejecución de PostgreSQL
+## Ejecución de Redis
 
 desde la terminal en la carpeta (redis) ejecutar:
 ```

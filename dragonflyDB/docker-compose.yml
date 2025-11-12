@@ -1,0 +1,24 @@
+services:
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.34.2
+    container_name: dragonfly
+    restart: always
+    volumes:
+      - ./data:/data
+    ulimits:
+      memlock: -1
+    environment:
+      - DRAGONFLY_PASSWORD=${DRAGONFLY_PASSWORD}
+    command: dragonfly --requirepass ${DRAGONFLY_PASSWORD}
+    networks:
+      - mired
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.dragonfly.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.dragonfly.entryPoints=redis"
+      - "traefik.tcp.routers.dragonfly.service=dragonfly"
+      - "traefik.tcp.services.dragonfly.loadbalancer.server.port=6379"
+
+networks:
+    mired:
+      external: true
