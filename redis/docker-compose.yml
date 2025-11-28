@@ -8,7 +8,9 @@ services:
       - ./data/redis.conf:/data/redis.conf
     command: redis-server /data/redis.conf --loglevel notice --requirepass ${REDIS_PASSWORD}
     networks:
-      - mired
+      mired:
+        aliases:
+          - redis.universidad.localhost
     labels:
       - "traefik.enable=true"
       - "traefik.tcp.routers.redis.rule=HostSNI(`*`)"

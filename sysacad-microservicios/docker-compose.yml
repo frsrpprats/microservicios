@@ -1,0 +1,88 @@
+services:
+    documentos-service:
+        image: gestion-documentos:v1.0.0
+        deploy:
+            replicas: 2
+        networks:
+            mired:
+                aliases:
+                    - documentos.universidad.localhost
+        environment:
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
+            - ACADEMICA_HOST=${ACADEMICA_HOST}
+            - ALUMNOS_HOST=${ALUMNOS_HOST}
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.documentos-service.rule=Host(`documentos.universidad.localhost`)"
+            - "traefik.http.routers.documentos-service.tls=true"
+            - "traefik.http.services.documentos-service.loadbalancer.server.port=5000"
+            # Patron Circuit Breaker
+            - "traefik.http.middlewares.documentos-service.circuitbreaker.expression=LatencyAtQuantileMS(50.0) > 100"
+            - "traefik.http.middlewares.documentos-service.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600) > 0.25"
+            - "traefik.http.middlewares.documentos-service.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
+            - "traefik.http.middlewares.documentos-service.retry.attempts=4"
+            - "traefik.http.middlewares.documentos-service.retry.initialinterval=100ms"            
+            - "traefik.docker.network=mired"
+    alumnos-service:
+        image: gestion-alumnos:v1.0.0
+        deploy:
+            replicas: 5
+        environment:
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
+            - HOST_DB=${HOST_DB}
+            - USER_DB=${USER_DB}
+            - PASSWORD_DB=${PASSWORD_DB}
+            - NAME_DB=${NAME_DB}            
+        networks:
+            mired:
+                aliases:
+                    - alumnos.universidad.localhost
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.alumnos-service.rule=Host(`alumnos.universidad.localhost`)"
+            - "traefik.http.routers.alumnos-service.tls=true"
+            - "traefik.http.services.alumnos-service.loadbalancer.server.port=5000"
+            # Patron Circuit Breaker
+            - "traefik.http.middlewares.alumnos-service.circuitbreaker.expression=LatencyAtQuantileMS(50.0) > 100"
+            - "traefik.http.middlewares.alumnos-service.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600) > 0.25"
+            - "traefik.http.middlewares.alumnos-service.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
+            - "traefik.http.middlewares.alumnos-service.retry.attempts=4"
+            - "traefik.http.middlewares.alumnos-service.retry.initialinterval=100ms"            
+            - "traefik.docker.network=mired"
+    academica-service:
+        image: gestion-academica:v1.0.0
+        deploy:
+            replicas: 3
+        environment:
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
+            - HOST_DB=${HOST_DB}
+            - USER_DB=${USER_DB}
+            - PASSWORD_DB=${PASSWORD_DB}
+            - NAME_DB=${NAME_DB}            
+        networks:
+            mired:
+                aliases:
+                    - academica.universidad.localhost
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.academica-service.rule=Host(`academica.universidad.localhost`)"
+            - "traefik.http.routers.academica-service.tls=true"
+            - "traefik.http.services.academica-service.loadbalancer.server.port=5000"
+            # Patron Circuit Breaker
+            - "traefik.http.middlewares.academica-service.circuitbreaker.expression=LatencyAtQuantileMS(50.0) > 100"
+            - "traefik.http.middlewares.academica-service.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600) > 0.25"
+            - "traefik.http.middlewares.academica-service.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
+            - "traefik.http.middlewares.academica-service.retry.attempts=4"
+            - "traefik.http.middlewares.academica-service.retry.initialinterval=100ms"            
+            - "traefik.docker.network=mired" 
+networks:
+    mired:
+      external: true
+
+        
