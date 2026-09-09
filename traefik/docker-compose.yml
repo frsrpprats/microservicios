@@ -20,6 +20,9 @@ services:
         labels:
             - "traefik.enable=true"
             - "traefik.http.routers.traefik=true"
+            # TODO: Aplicar Rate Limiting
+            # https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/ratelimit/
+            # https://traefik.io/glossary/rate-limiting-what-it-is-and-why-it-matters
 networks:
     mired:
         external: true
