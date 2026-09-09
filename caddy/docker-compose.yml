@@ -1,0 +1,30 @@
+services:
+  reverse-proxy-caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: registro/reverse-proxy-caddy:2.11
+    command: ["caddy", "docker-proxy", "--caddyfile-path", "/etc/caddy/Caddyfile"]
+    restart: unless-stopped
+    environment:
+      - CADDY_INGRESS_NETWORKS=mired
+    networks:
+      - mired
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy_file:/etc/caddy
+      - ./certs:/etc/caddy/certs:ro
+      - ./data:/data
+      - ./config:/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+
+networks:
+  mired:
+    external: true

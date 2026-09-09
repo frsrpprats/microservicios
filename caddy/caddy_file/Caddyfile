@@ -1,0 +1,45 @@
+{
+	admin 0.0.0.0:2019
+
+	# Rate limit must run before proxy handlers.
+	order rate_limit before reverse_proxy
+}
+
+# Reusable local certificate for API routes.
+(tls-local-certs) {
+	tls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem
+}
+
+# Reusable defaults for routes created from Docker labels.
+# Route usage in app labels:
+#   caddy: app.universidad.localhost
+#   caddy.import: tls-local-certs
+#   caddy.import: rate-limit-defaults
+#   caddy.import: resilience-proxy {{upstreams 5000}}
+(rate-limit-defaults) {
+	rate_limit {
+		zone per_ip {
+			key {remote_host}
+			events 120
+			window 1m
+		}
+	}
+}
+
+# Proxy resiliency defaults:
+# - Load balancing (least_conn)
+# - Retry policy
+# - Passive health checks (circuit-breaker-like behavior)
+# - Bulkhead-like isolation via unhealthy_request_count
+(resilience-proxy) {
+	reverse_proxy {args[0]} {
+		lb_policy least_conn
+		lb_try_duration 10s
+		lb_try_interval 250ms
+		lb_retries 3
+		fail_duration 30s
+		max_fails 3
+		unhealthy_status 500 502 503 504
+		unhealthy_request_count 100
+	}
+}
